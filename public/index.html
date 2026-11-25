@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmileCare CRM</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#fff; --ink:#15171a; --muted:#6b7280; --line:#e5e7eb;
+  --brand:#0f766e; --brand-soft:#ccfbf1;
+  --ok:#15803d; --ok-bg:#dcfce7; --warn:#b45309; --warn-bg:#fef3c7;
+  --bad:#b91c1c; --bad-bg:#fee2e2; --info:#1d4ed8; --info-bg:#dbeafe;
+  --wa-bg:#efeae2; --wa-out:#d9fdd3; --wa-head:#075e54;
+}
+*{box-sizing:border-box} body{margin:0;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;background:var(--bg);color:var(--ink)}
+header{display:flex;align-items:center;gap:12px;padding:14px 22px;background:var(--card);border-bottom:1px solid var(--line)}
+header h1{font-size:17px;margin:0} .logo{width:30px;height:30px;border-radius:8px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:17px}
+.badge{font-size:11px;padding:3px 8px;border-radius:999px;font-weight:600}
+.spacer{flex:1} .muted{color:var(--muted)} button{font:inherit;cursor:pointer}
+.btn{border:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:8px;font-weight:600}
+.btn:disabled{opacity:.5;cursor:default} .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+main{display:grid;grid-template-columns:300px 1fr 360px;gap:16px;padding:16px;max-width:1500px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 12px}
+label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+input,select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat b{font-size:20px;display:block}
+table{width:100%;border-collapse:collapse} th{font-size:11px;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle} tr.sel td{background:#f0fdfa} tr{cursor:pointer}
+.pill{font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.s-booked{background:var(--info-bg);color:var(--info)} .s-calling{background:var(--brand-soft);color:var(--brand)}
+.s-confirmed{background:var(--ok-bg);color:var(--ok)} .s-reschedule_requested,.s-callback{background:var(--warn-bg);color:var(--warn)}
+.s-cancelled,.s-wrong_number,.s-no_answer{background:var(--bad-bg);color:var(--bad)}
+.pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--brand);margin-right:5px;animation:p 1s infinite}
+@keyframes p{50%{opacity:.25}}
+.detail{margin-top:14px} .tl{list-style:none;padding:0;margin:0} .tl li{padding:4px 0 4px 16px;position:relative;font-size:13px}
+.tl li:before{content:"";position:absolute;left:3px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--brand)}
+.transcript{background:#f9fafb;border:1px solid var(--line);border-radius:8px;padding:10px;max-height:260px;overflow:auto;font-size:13px}
+.transcript p{margin:0 0 6px} .transcript .a b{color:var(--brand)} .transcript .u b{color:var(--info)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* phone */
+.phone{width:320px;margin:0 auto;border:10px solid #111;border-radius:36px;overflow:hidden;background:var(--wa-bg);height:620px;display:flex;flex-direction:column}
+.wa-head{background:var(--wa-head);color:#fff;padding:12px 14px;display:flex;gap:10px;align-items:center}
+.wa-av{width:34px;height:34px;border-radius:50%;background:#fff;color:var(--wa-head);display:grid;place-items:center;font-weight:700}
+.wa-body{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.bubble{background:#fff;border-radius:8px;padding:7px 9px 4px;max-width:85%;font-size:13px;white-space:pre-wrap;box-shadow:0 1px .5px rgba(0,0,0,.13);align-self:flex-start;animation:pop .35s ease}
+.bubble small{display:block;text-align:right;color:#667781;font-size:10px;margin-top:2px}
+.ticks{color:#53bdeb} @keyframes pop{from{transform:scale(.9);opacity:0}}
+.wa-sys{align-self:center;background:#fff8c4;font-size:11px;padding:4px 8px;border-radius:6px;color:#54656f}
+.wa-foot{background:#f0f2f5;padding:8px;display:flex;gap:6px}.wa-foot div{flex:1;background:#fff;border-radius:18px;padding:8px 12px;color:#8696a0;font-size:13px}
+.empty{color:var(--muted);text-align:center;padding:30px 10px}
+@media (max-width:1100px){main{grid-template-columns:1fr}.phone{width:100%;max-width:340px}}
+tr.flash td{animation:flash 2s ease}@keyframes flash{0%,40%{background:#bbf7d0}}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;max-width:90vw;display:none;z-index:9}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🦷</div>
+  <div><h1>SmileCare Dental · Front Desk CRM</h1><div class="muted" style="font-size:12px">Bookings → Bolna voice confirmation → WhatsApp</div></div>
+  <div class="spacer"></div>
+  <input id="access" type="password" placeholder="Access code" style="display:none;width:140px" oninput="setAccess(this.value)">
+  <span id="mode" class="badge"></span>
+  <button class="btn ghost" onclick="reset()">Reset demo data</button>
+</header>
+
+<div id="toast"></div>
+<main>
+  <!-- 1. Booking (patient-facing) -->
+  <section class="card">
+    <h2>① Patient books online</h2>
+    <form id="book">
+      <label>Full name</label><input name="patient_name" required placeholder="e.g. Priya Sharma">
+      <label>Mobile number</label><input name="phone" required inputmode="tel" placeholder="98450 12345 or +91 98450 12345" oninput="this.style.borderColor='';document.querySelector('#phoneErr').style.display='none'">
+      <div id="phoneErr" style="display:none;color:var(--bad);font-size:12px;margin-top:4px"></div>
+      <label>Treatment</label>
+      <select name="treatment">
+        <option>Dental check-up</option><option>Teeth cleaning</option><option>Root canal</option>
+        <option>Tooth extraction</option><option>Braces consultation</option><option>Teeth whitening</option>
+      </select>
+      <label>Doctor</label>
+      <select name="doctor_name"><option>Dr. Mehta</option><option>Dr. Iyer</option><option>Dr. Kapoor</option></select>
+      <div class="row2">
+        <div><label>Date</label><input name="date" type="date" required></div>
+        <div><label>Time</label>
+          <select name="time"><option>10:00 AM</option><option>11:30 AM</option><option>2:00 PM</option><option>4:30 PM</option><option>6:00 PM</option></select></div>
+      </div>
+      <button class="btn" style="width:100%;margin-top:14px">Book appointment</button>
+    </form>
+    <p class="muted" style="font-size:12px;margin-top:12px">Tip: use your own number (+91…) to receive the real Bolna call in live mode. Data is stored in this browser only.</p>
+  </section>
+
+  <!-- 2. CRM -->
+  <section>
+    <div class="stats" id="stats"></div>
+    <div class="card">
+      <h2>② CRM · Appointments</h2>
+      <table>
+        <thead><tr><th>Patient</th><th>Treatment</th><th>When</th><th>Status</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="card detail" id="detail"><div class="empty">Select an appointment to see the call and activity.</div></div>
+  </section>
+
+  <!-- 3. WhatsApp -->
+  <section>
+    <div class="card" style="padding:16px 8px">
+      <h2 style="padding-left:8px">③ Patient's WhatsApp (simulated)</h2>
+      <div class="phone">
+        <div class="wa-head"><div class="wa-av">S</div><div><b>SmileCare Dental</b><div style="font-size:11px;opacity:.8">Business account ✓</div></div></div>
+        <div class="wa-body" id="wa"></div>
+        <div class="wa-foot"><div>Message</div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+
+<script>
+/* ---------- config ---------- */
+const STORE="smilecare-crm-v1", ACCESS="smilecare-access";
+const TERMINAL=["completed","call-disconnected","no-answer","busy","failed","canceled","cancelled","stopped","error","balance-low"];
+const LABEL={booked:"Booked",calling:"Calling…",confirmed:"Confirmed",reschedule_requested:"Reschedule requested",
+  cancelled:"Cancelled",callback:"Call back later",wrong_number:"Wrong number",no_answer:"No answer"};
+let cfg={mode:"demo",access_required:false}, db, selected=null, lastWa="";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const now=()=>new Date().toISOString();
+const t=iso=>new Date(iso).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+const uid=()=>Math.random().toString(16).slice(2,10);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const pill=s=>`<span class="pill s-${s}">${s==="calling"?'<span class="pulse"></span>':""}${LABEL[s]||s}</span>`;
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+/* ---------- storage (browser only) ---------- */
+function seed(){
+  const rows=[["Ananya Rao","+919900000001","Teeth cleaning","Dr. Mehta","Thu, 27 Nov","10:30 AM","confirmed"],
+    ["Rahul Verma","+919900000002","Root canal (sitting 2)","Dr. Iyer","Thu, 27 Nov","4:30 PM","reschedule_requested"],
+    ["Fatima Sheikh","+919900000003","Braces review","Dr. Mehta","Fri, 28 Nov","11:00 AM","booked"]];
+  return {appointments:rows.map(([n,p,tr,d,dt,tm,st])=>({id:uid(),patient_name:n,phone:p,treatment:tr,doctor_name:d,
+    appointment_date:dt,appointment_time:tm,status:st,calls:[],whatsapp:[],timeline:[{at:now(),text:"Booked via website"}]}))};
+}
+function load(){try{const s=lsGet(STORE); if(s) return JSON.parse(s)}catch(e){} return seed()}
+function save(){lsSet(STORE,JSON.stringify(db))}
+db=load();
+
+/* ---------- outcome → CRM + WhatsApp ---------- */
+function inferStatus(ext,transcript,callStatus){
+  const s=String(ext?.appointment_status||"").trim().toLowerCase();
+  if(LABEL[s]&&s!=="booked"&&s!=="calling") return s;
+  if(["no-answer","busy","failed"].includes(callStatus)) return "no_answer";
+  const u=(transcript||"").toLowerCase().split("\n").filter(l=>l.startsWith("user")).join(" ");
+  if(/cancel|won't be able|not coming/.test(u)) return "cancelled";
+  if(/reschedule|another day|different time|change the/.test(u)) return "reschedule_requested";
+  if(/yes|sure|confirm|i'll be there|will come|haan/.test(u)) return "confirmed";
+  return "callback";
+}
+function waText(a,st,ext){
+  const f=a.patient_name.split(" ")[0], when=`${a.appointment_date} at ${a.appointment_time}`;
+  if(st==="confirmed") return `Hi ${f} 👋\n\n✅ *Your appointment is confirmed*\n\n🦷 ${a.treatment}\n👩‍⚕️ ${a.doctor_name}\n📅 ${when}\n📍 SmileCare Dental, 12th Main, Indiranagar\n\nPlease arrive 10 min early with any previous dental reports.\nReply *R* to reschedule.`;
+  if(st==="reschedule_requested") return `Hi ${f}, thanks for letting us know 🙏\n\n🔁 *Reschedule request received*\nYou asked for: *${ext?.new_preferred_time||"your preferred time"}*\n\nOur front desk will confirm the new slot here shortly.`;
+  if(st==="cancelled") return `Hi ${f}, your appointment on ${when} has been *cancelled* as requested.\n\nWhenever you're ready, book again here: smilecare.example/book 😊`;
+  if(st==="callback") return `Hi ${f}, we tried to confirm your appointment on ${when}. We'll call you back, or reply *YES* to confirm right here.`;
+  if(st==="no_answer") return `Hi ${f}, we couldn't reach you on call 📞\nYour appointment is on *${when}*.\n\nReply *YES* to confirm or *R* to reschedule.`;
+  return null;
+}
+function applyExecution(a,c,ex){
+  const st=String(ex.status||c.status||"").toLowerCase();
+  if(st&&st!==c.status){c.status=st; a.timeline.push({at:now(),text:"Call "+st})}
+  for(const k of ["transcript","summary","extracted_data","recording_url","duration"]) if(ex[k]) c[k]=ex[k];
+  if(TERMINAL.includes(st)&&!c.finalised){
+    c.finalised=true;
+    let ext=c.extracted_data||{}; if(typeof ext==="string"){try{ext=JSON.parse(ext)}catch(e){ext={}}}
+    const out=inferStatus(ext,c.transcript,st); c.outcome=out; a.status=out;
+    if(ext.patient_notes) a.notes=ext.patient_notes;
+    a.timeline.push({at:now(),text:"Outcome: "+(LABEL[out]||out)});
+    const m=waText(a,out,ext);
+    if(m){a.whatsapp.push({at:now(),text:m}); a.timeline.push({at:now(),text:"WhatsApp sent (simulated)"})}
+  }
+  save(); render();
+}
+
+/* ---------- live call via /api (key stays on the server) ---------- */
+function headers(){return {"Content-Type":"application/json","X-Access-Code":lsGet(ACCESS)||""}}
+async function pollLive(a,c){
+  for(let i=0;i<200&&!c.finalised;i++){
+    await sleep(3000);
+    try{
+      const r=await fetch("/api/execution?id="+encodeURIComponent(c.execution_id),{headers:headers()});
+      const j=await r.json();
+      if(!r.ok){toast(j.error||"Polling error"); if(r.status===401) return; continue}
+      applyExecution(a,c,j);
+    }catch(e){/* network blip: keep polling */}
+  }
+}
+
+/* ---------- demo call (no key configured) ---------- */
+const SCRIPT={
+  confirmed:[["assistant","Hi, am I speaking with {n}? This is Priya calling from SmileCare Dental Clinic."],["user","Yes, speaking."],
+    ["assistant","I'm calling to confirm your {t} appointment with {d} on {dt} at {tm}. Will you be able to make it?"],["user","Yes, sure, I'll be there."],
+    ["assistant","Wonderful, you're all set. Please come 10 minutes early and bring any previous dental reports. We'll send the details on WhatsApp too."],
+    ["user","Okay, thanks."],["assistant","Thank you, {n}. Have a great day!"]],
+  reschedule_requested:[["assistant","Hi, am I speaking with {n}? This is Priya calling from SmileCare Dental Clinic."],["user","Yes."],
+    ["assistant","I'm calling to confirm your {t} appointment with {d} on {dt} at {tm}. Will you be able to make it?"],
+    ["user","Actually I have office that day. Can we reschedule to Saturday morning?"],
+    ["assistant","No problem, Saturday morning. I've noted that, our front desk will confirm the new slot on WhatsApp shortly."],
+    ["assistant","Thank you, {n}. Have a great day!"]]};
+async function runDemo(a,c){
+  const out=Math.random()<0.7?"confirmed":"reschedule_requested";
+  const v={n:a.patient_name.split(" ")[0],t:a.treatment,d:a.doctor_name,dt:a.appointment_date,tm:a.appointment_time};
+  for(const st of ["ringing","in-progress"]){await sleep(1500); applyExecution(a,c,{status:st})}
+  const lines=[];
+  for(const [role,txt] of SCRIPT[out]){await sleep(1700); lines.push(role+": "+txt.replace(/\{(\w+)\}/g,(_,k)=>v[k])); applyExecution(a,c,{status:"in-progress",transcript:lines.join("\n")})}
+  await sleep(1200);
+  applyExecution(a,c,{status:"completed",transcript:lines.join("\n"),
+    extracted_data:{appointment_status:out,new_preferred_time:out==="confirmed"?"":"Saturday morning"},
+    summary:"Patient "+(out==="confirmed"?"confirmed":"asked to reschedule")+" the appointment."});
+}
+
+/* ---------- phone helpers ---------- */
+// Accepts 9845012345, 09845012345, 919845012345, +91 98450-12345, (+91) 98450 12345, or any +<country><number>
+function normalizePhone(raw){
+  let p=String(raw||"").replace(/[\s\-().]/g,"");
+  if(/^00\d+$/.test(p)) p="+"+p.slice(2);
+  if(/^0\d{10}$/.test(p)) p="+91"+p.slice(1);
+  else if(/^91\d{10}$/.test(p)) p="+"+p;
+  else if(/^[6-9]\d{9}$/.test(p)) p="+91"+p;
+  return /^\+[1-9]\d{7,14}$/.test(p)?p:"";
+}
+
+/* ---------- actions ---------- */
+async function call(id){
+  const a=db.appointments.find(x=>x.id===id); if(!a||a.status==="calling") return;
+  selected=id;
+  let eid;
+  if(cfg.mode==="live"){
+    if(cfg.access_required&&!lsGet(ACCESS)){toast("Enter the access code (top right) first"); $("#access").focus(); return}
+    try{
+      const r=await fetch("/api/call",{method:"POST",headers:headers(),body:JSON.stringify(a)});
+      const j=await r.json(); if(!r.ok){toast(j.error||"Call failed"); return}
+      eid=j.execution_id;
+    }catch(e){toast("Network error: "+e.message); return}
+  } else eid="demo-"+uid();
+  const c={execution_id:eid,status:"queued",started_at:now(),transcript:""};
+  a.calls.push(c); a.status="calling";
+  a.timeline.push({at:now(),text:cfg.mode==="live"?"Confirmation call placed via Bolna":"Confirmation call placed (demo)"});
+  save(); render();
+  cfg.mode==="live"?pollLive(a,c):runDemo(a,c);
+}
+function pick(id){selected=id; render()}
+function reset(){db=seed(); selected=null; save(); render()}
+function setAccess(v){lsSet(ACCESS,v.trim())}
+let toastTimer; function toast(m,type){const el=$("#toast"); el.textContent=m; el.style.background=type==="ok"?"var(--ok)":"#111"; el.style.display="block"; clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.style.display="none",6000)}
+
+$("#book").addEventListener("submit",e=>{
+  e.preventDefault(); const f=new FormData(e.target);
+  const phone=normalizePhone(f.get("phone"));
+  const err=$("#phoneErr"), inp=e.target.phone;
+  if(!phone){err.textContent="Enter a valid mobile number, e.g. 98450 12345 or +91 98450 12345"; err.style.display="block"; inp.style.borderColor="var(--bad)"; inp.focus(); return}
+  err.style.display="none"; inp.style.borderColor="";
+  const d=new Date(f.get("date")+"T00:00");
+  const a={id:uid(),patient_name:String(f.get("patient_name")).trim(),phone,treatment:f.get("treatment"),doctor_name:f.get("doctor_name"),
+    appointment_date:d.toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"}),appointment_time:f.get("time"),
+    status:"booked",calls:[],whatsapp:[],timeline:[{at:now(),text:"Booked via website"}]};
+  db.appointments.unshift(a); selected=a.id; save(); e.target.reset(); setDefaultDate(); render();
+  toast("✓ Appointment added to the CRM for "+a.patient_name+" ("+phone+")", "ok");
+  const row=document.querySelector("#rows tr.sel"); if(row){row.classList.add("flash"); row.scrollIntoView({block:"nearest",behavior:"smooth"})}
+});
+
+/* ---------- render ---------- */
+function render(){
+  const A=db.appointments, n=s=>A.filter(a=>a.status===s).length;
+  if(!selected&&A[0]) selected=A[0].id;
+  $("#stats").innerHTML=[["Total",A.length],["Confirmed",n("confirmed")],["Needs action",n("reschedule_requested")+n("callback")+n("no_answer")],["Awaiting call",n("booked")]]
+    .map(([k,v])=>`<div class="stat"><span class="muted">${k}</span><b>${v}</b></div>`).join("");
+  $("#rows").innerHTML=A.map(a=>`<tr class="${a.id===selected?"sel":""}" onclick="pick('${a.id}')">
+     <td><b>${esc(a.patient_name)}</b><div class="muted" style="font-size:12px">${esc(a.phone)}</div></td>
+     <td>${esc(a.treatment)}<div class="muted" style="font-size:12px">${esc(a.doctor_name)}</div></td>
+     <td>${esc(a.appointment_date)}<div class="muted" style="font-size:12px">${esc(a.appointment_time)}</div></td>
+     <td>${pill(a.status)}</td>
+     <td><button class="btn" ${a.status==="calling"?"disabled":""} onclick="event.stopPropagation();call('${a.id}')">📞 ${a.calls.length?"Call again":"Confirm call"}</button></td></tr>`).join("");
+  renderDetail(); renderWa();
+}
+function renderDetail(){
+  const a=db.appointments.find(x=>x.id===selected);
+  if(!a){$("#detail").innerHTML='<div class="empty">Select an appointment to see the call and activity.</div>';return}
+  const c=a.calls[a.calls.length-1];
+  const lines=(c?.transcript||"").split("\n").filter(Boolean).map(l=>{
+    const i=l.indexOf(":"), who=l.slice(0,i).trim().toLowerCase(), u=who.startsWith("user");
+    return `<p class="${u?"u":"a"}"><b>${u?esc(a.patient_name.split(" ")[0]):"Priya (AI)"}:</b>${esc(l.slice(i+1))}</p>`}).join("");
+  let ext=c?.extracted_data; if(typeof ext==="string"){try{ext=JSON.parse(ext)}catch(e){ext=null}}
+  $("#detail").innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap"><h2 style="margin:0">${esc(a.patient_name)}</h2>${pill(a.status)}
+      <span class="spacer"></span>${c?`<span class="muted" style="font-size:12px">Bolna execution: <code>${esc(c.execution_id)}</code> · ${esc(c.status)}</span>`:""}</div>
+    <div class="grid2">
+      <div><label>Call transcript ${c&&!c.finalised?'<span class="pulse"></span>live':""}</label>
+        <div class="transcript" id="tr">${lines||'<span class="muted">No transcript yet.</span>'}</div>
+        ${c?.recording_url?`<audio controls src="${esc(c.recording_url)}" style="width:100%;margin-top:8px"></audio>`:""}</div>
+      <div><label>Activity</label><ul class="tl">${a.timeline.map(e=>`<li><span class="muted">${t(e.at)}</span> · ${esc(e.text)}</li>`).join("")}</ul>
+        ${ext&&typeof ext==="object"?`<label>Extracted by Bolna</label><div class="transcript">${Object.entries(ext).filter(([k,v])=>v).map(([k,v])=>`<p><b>${esc(k)}:</b> ${esc(typeof v==="object"?JSON.stringify(v):v)}</p>`).join("")}</div>`:""}
+        ${c?.summary?`<label>Summary</label><div class="transcript">${esc(c.summary)}</div>`:""}</div>
+    </div>`;
+  const tr=$("#tr"); if(tr) tr.scrollTop=tr.scrollHeight;
+}
+function renderWa(){
+  const a=db.appointments.find(x=>x.id===selected), wa=$("#wa");
+  if(!a){wa.innerHTML="";lastWa="";return}
+  const key=a.id+":"+a.whatsapp.length; if(key===lastWa) return; lastWa=key;
+  wa.innerHTML=`<div class="wa-sys">Chat with ${esc(a.patient_name)} · ${esc(a.phone)}</div>`+
+    (a.whatsapp.length?a.whatsapp.map(m=>`<div class="bubble">${esc(m.text).replace(/\*(.+?)\*/g,"<b>$1</b>")}<small>${t(m.at)} <span class="ticks">✓✓</span></small></div>`).join("")
+     :`<div class="empty">No messages yet.<br>A WhatsApp goes out automatically once the confirmation call ends.</div>`);
+  wa.scrollTop=wa.scrollHeight;
+}
+function setDefaultDate(){document.querySelector('[name=date]').valueAsDate=new Date(Date.now()+86400000)}
+
+/* ---------- boot ---------- */
+(async()=>{
+  setDefaultDate(); render();
+  try{const r=await fetch("/api/config"); if(r.ok) cfg=await r.json()}catch(e){}
+  const m=$("#mode"), live=cfg.mode==="live";
+  m.textContent=live?"LIVE · Bolna":"DEMO · simulated calls";
+  m.style.background=live?"var(--ok-bg)":"var(--warn-bg)"; m.style.color=live?"var(--ok)":"var(--warn)";
+  if(live&&cfg.access_required){const i=$("#access"); i.style.display="block"; i.value=lsGet(ACCESS)||""}
+  // resume calls interrupted by a page reload
+  for(const a of db.appointments){const c=a.calls[a.calls.length-1];
+    if(c&&!c.finalised){ if(live&&!c.execution_id.startsWith("demo-")) pollLive(a,c); else applyExecution(a,c,{status:"no-answer"}) }}
+})();
+</script>
+</body>
+</html>
